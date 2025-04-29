@@ -20,7 +20,6 @@ export type Station = {
   longitude: number;
   free_bikes: number;
   empty_slots: number;
-  extra?: any;
 };
 
 export type NetworkDetail = {
