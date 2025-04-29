@@ -20,7 +20,6 @@ export const Map = ({
   showPopups = false,
 }: MapProps & { useUserLocation?: boolean; showPopups?: boolean }) => {
   const mapRef = useRef<mapboxgl.Map | null>(null);
-  const [userLocationCentered, setUserLocationCentered] = useState(false);
   const [selectedMarker, setSelectedMarker] = useState<MarkerData | null>(null);
 
   useEffect(() => {
@@ -39,14 +38,12 @@ export const Map = ({
             zoom: 12,
             duration: 1000,
           });
-          setUserLocationCentered(true);
         }
       },
       (error) => {
         if (process.env.NODE_ENV === "development") {
           console.warn("Could not fetch user location:", error.message);
         }
-        setUserLocationCentered(false);
       },
       { enableHighAccuracy: true }
     );
@@ -60,20 +57,11 @@ export const Map = ({
       bounds.extend([marker.longitude, marker.latitude]);
     });
 
-    if (markers.length === 1) {
-      // If only one marker, just center on it
-      mapRef.current.easeTo({
-        center: [markers[0].longitude, markers[0].latitude],
-        zoom: 12,
-        duration: 1000,
-      });
-    } else {
-      mapRef.current.fitBounds(bounds, {
-        padding: 60,
-        duration: 1000,
-      });
-    }
-  }, [markers]); // ← Only depend on markers!
+    mapRef.current.fitBounds(bounds, {
+      padding: 60,
+      duration: 1000,
+    });
+  }, [markers]);
 
   return (
     <div className="w-full h-[400px]">
