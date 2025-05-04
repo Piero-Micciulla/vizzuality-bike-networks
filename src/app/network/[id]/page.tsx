@@ -1,20 +1,25 @@
-// src/app/network/[id]/page.tsx
 "use client";
 
 import { Suspense } from "react";
-import Link from "next/link";
+import PageContainer from "@/components/layout/PageContainer";
 import { NetworkDetailPageContent } from "@/features/network-detail/network-detail-page-content";
+import Loader from "@/components/ui/loader";
 
 const NetworkDetailPage = () => {
   return (
-    <main className="container mx-auto py-8">
-      <Link href="/" className="text-blue-500 hover:underline mb-4 block">
-        ← Back to Networks
-      </Link>
-
-      <Suspense fallback={<div>Loading...</div>}>
-        <NetworkDetailPageContent />
-      </Suspense>
+    <main className="bg-torea-800 text-white min-h-screen">
+      <PageContainer className="pb-8 lg:pb-0">
+        <Suspense
+          fallback={
+            <div className="flex flex-col items-center justify-center h-64 gap-2">
+              <Loader className="border-white border-t-grenadier-400" />
+              <p className="text-sm text-white/80">Loading network details...</p>
+            </div>
+          }
+        >
+          <NetworkDetailPageContent />
+        </Suspense>
+      </PageContainer>
     </main>
   );
 };

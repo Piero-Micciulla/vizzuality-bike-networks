@@ -1,21 +1,65 @@
 import * as React from "react";
-
+import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
-type InputProps = React.InputHTMLAttributes<HTMLInputElement>;
+const inputVariants = cva(
+  "text-sm focus-visible:outline-none disabled:pointer-events-none rounded-full w-full",
+  {
+    variants: {
+      variant: {
+        secondary:
+          "bg-transparent text-torea-800 border border-torea-200 placeholder:text-torea-800 focus-visible:ring-1 focus-visible:ring-torea-800 focus-visible:ring-offset-1",
+        tertiary:
+          "bg-transparent text-zinc-500 placeholder:text-zinc-500",
+      },
+      size: {
+        default: "px-8 py-3",
+      },
+    },
+    defaultVariants: {
+      variant: "secondary",
+      size: "default",
+    },
+  }
+);
+
+type InputProps = Omit<
+  React.InputHTMLAttributes<HTMLInputElement>,
+  "size"
+> &
+  VariantProps<typeof inputVariants> & {
+    icon?: React.ReactNode;
+  };
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type = "text", ...props }, ref) => {
+  ({ className, variant, size, icon, type = "text", ...props }, ref) => {
+    const iconOffset = variant === "tertiary" ? "pl-10" : "pl-14";
+
     return (
-      <input
-        type={type}
-        className={cn(
-          "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
-          className
+      <div className="relative w-full">
+        {icon && (
+          <span
+            className={cn(
+              "absolute top-1/2 -translate-y-1/2 pointer-events-none",
+              variant === "secondary" && "left-8 text-torea-800",
+              variant === "tertiary" && "left-4 text-zinc-500"
+            )}
+          >
+            {icon}
+          </span>
         )}
-        ref={ref}
-        {...props}
-      />
+        <input
+          type={type}
+          ref={ref}
+          className={cn(
+            inputVariants({ variant, size }),
+            icon && iconOffset,
+            className
+          )}
+          role="textbox"
+          {...props}
+        />
+      </div>
     );
   }
 );

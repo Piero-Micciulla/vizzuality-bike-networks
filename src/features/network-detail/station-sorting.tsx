@@ -1,29 +1,46 @@
 "use client";
 
 import { StationSortingProps } from "@/types/station";
+import { cn } from "@/lib/utils";
+import { ArrowUpDown, ArrowDownUp } from "lucide-react";
 
 export const StationSorting = ({
   sortField,
   sortDirection,
   onSortChange,
+  className = "",
 }: StationSortingProps) => {
   const getLabel = (field: "free_bikes" | "empty_slots") => {
-    if (sortField !== field) return "";
-    return sortDirection === "asc" ? "↑" : "↓";
+    if (sortField !== field) {
+      return <ArrowUpDown className="inline size-4 ml-1" />;
+    }
+
+    return sortDirection === "asc" ? (
+      <ArrowUpDown className="inline size-4 ml-1" />
+    ) : (
+      <ArrowDownUp className="inline size-4 ml-1" />
+    );
   };
 
   return (
-    <div className="flex justify-between items-center font-semibold p-2 border-b mb-4">
+    <div
+      className={cn(
+        "flex justify-between items-center font-medium text-sm p-2 border-b uppercase",
+        className
+      )}
+    >
       <div className="w-1/2">Station Name</div>
       <button
         onClick={() => onSortChange("free_bikes")}
-        className="w-1/4 text-left"
+        className="w-1/4 text-left uppercase cursor-pointer flex flex-col lg:flex-row items-start lg:items-center gap-1"
+        aria-pressed={sortField === "free_bikes"}
       >
         Free Bikes {getLabel("free_bikes")}
       </button>
       <button
         onClick={() => onSortChange("empty_slots")}
-        className="w-1/4 text-left"
+        className="w-1/4 text-left uppercase cursor-pointer flex flex-col lg:flex-row items-start lg:items-center gap-1"
+        aria-pressed={sortField === "empty_slots"}
       >
         Empty Slots {getLabel("empty_slots")}
       </button>
