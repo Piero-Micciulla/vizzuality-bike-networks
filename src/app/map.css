@@ -1,0 +1,25 @@
+.mapboxgl-ctrl-group {
+  border-radius: 1rem !important;
+  overflow: hidden;
+}
+
+.mapboxgl-ctrl button {
+  width: 32px !important;
+  height: 32px !important;
+}
+
+@media (max-width: 640px) {
+  .mapboxgl-ctrl button {
+    width: 24px;
+    height: 24px;
+  }
+
+  .mapboxgl-ctrl-icon {
+    transform: scale(0.8);
+  }
+}
+
+.mapboxgl-popup-content {
+  background: transparent !important;
+  box-shadow: none !important;
+}

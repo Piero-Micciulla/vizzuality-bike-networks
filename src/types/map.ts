@@ -1,3 +1,6 @@
+import type { RefObject } from "react";
+import type mapboxgl from "mapbox-gl";
+
 export type MarkerData = {
   id: string;
   latitude: number;
@@ -14,4 +17,7 @@ export type MapProps = {
     longitude: number;
     zoom: number;
   };
+  useUserLocation?: boolean;
+  showPopups?: boolean;
+  mapRef?: RefObject<mapboxgl.Map | null>;
 };

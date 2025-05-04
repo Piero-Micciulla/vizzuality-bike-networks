@@ -5,4 +5,5 @@ export type StationSortingProps = {
   sortField: SortKey | null;
   sortDirection: SortOrder;
   onSortChange: (field: SortKey) => void;
+  className?: string;
 };
