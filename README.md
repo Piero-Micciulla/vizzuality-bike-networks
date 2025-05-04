@@ -1,36 +1,123 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🚲 CycleMap – Bike Network Explorer
 
-## Getting Started
+CycleMap is a responsive, accessible and performant web app for discovering global bike networks using the CityBikes API. Built with Next.js (App Router), Tailwind CSS, TypeScript, and Mapbox GL, it focuses on delivering a seamless experience with attention to UI polish, data clarity, and device responsiveness.
 
-First, run the development server:
+---
+
+## 🛠 Tech Stack
+
+- **Framework**: \[Next.js 14+ App Router]
+- **Styling**: Tailwind CSS + CSS Variables
+- **Type Safety**: TypeScript throughout
+- **Maps**: Mapbox GL JS
+- **Animations**: Framer Motion + Tailwind transitions
+- **Components**: Custom UI library (with Radix UI)
+
+---
+
+## 🚀 Features
+
+- 🔍 **Search & Filter** networks by name and country
+- 🗺️ **Interactive Map** showing stations and bikes/slots
+- 📱 **Responsive UI** across all breakpoints
+- 📍 **"Near Me"** function to locate closest network
+- 📦 **Pagination & Sorting** for large datasets
+- 🔄 **Animated transitions** between pages
+- 🎨 **Custom popups** with live station info
+- 🧠 **Loading states**
+
+---
+
+## 📁 Project Structure Highlights
+
+- `page.tsx` – holding homepage structure
+- `network/[id]/page.tsx` – holding network-details structure
+- `features/` – encapsulated UI modules grouped by domain: networks/ for homepage functionality and network-detail/ for detail page features. This keeps related components (like search, filters, sorting, and station lists) isolated and scoped.
+- `components/layout/` – shared layout primitives like PageContainer for consistent responsive layout structure
+- `components/ui/` – headless and styled component primitives
+- `components/Map.tsx` – encapsulated Mapbox logic, rendering, popups, and map interactivity
+- `components/Pagination.tsx` – reusable pagination component with styling variants
+- `lib/` – utility functions, API clients, and pagination variants for dynamic handling
+- `hooks/` – responsive breakpoints and media helpers
+
+---
+
+## 🧱 Architectural Decisions
+
+- **App Router (Next.js 14)** was chosen for its co-location and built-in async capabilities
+- **Mapbox GL JS** provided better performance and customization over alternatives like Leaflet
+- **Global styling** was managed via Tailwind + CSS custom properties for theme tokens
+- Used **custom hooks** for screen size, allowing dynamic rendering logic (like popover placement)
+- Created **utility functions** to format long labels and company names
+
+---
+
+## 😅 Challenges
+
+- 🔄 **Handling geolocation fallback gracefully** when denied or unavailable
+- 🧭 **Calculating the closest network** from geolocation with basic geometry
+- ⚖️ **Balancing design fidelity** while preserving performance (e.g. limiting station render scope)
+- 🌍 **Normalizing inconsistent data** from CityBikes API (e.g. empty fields, naming conventions)
+
+---
+
+## 🧪 Getting Started
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+yarn install
+yarn run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Visit [http://localhost:3000](http://localhost:3000) to explore the app.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 📦 Deployment
 
-## Learn More
+To deploy, simply push to a GitHub repo connected to [Vercel](https://vercel.com).
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🙌 Credits
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Thanks to CityBikes API for the open data, Mapbox for the mapping layer, and the team behind Lucide for the icon system.
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🛠️ Future Improvements
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+While the current implementation of CycleMap satisfies the main project goals, there are several areas where the application can be enhanced further:
+
+📊 **Performance & UX**
+
+Offline map caching: Enable limited offline access for low-connectivity scenarios.
+
+Skeleton screens: Replace static loaders with dynamic skeletons for a more polished experience.
+
+🔧 **Feature Expansion**
+
+Dark mode toggle: Add support for light/dark themes based on user preference.
+
+Favorites/bookmarks: Let users save and revisit preferred networks.
+
+🔍 **Data & Real-time**
+
+Live updates: Pull real-time station data periodically where supported.
+
+Search by station name: Add support for querying directly at the station level.
+
+✅ **Dev & Testing**
+
+Unit and integration tests: Expand test coverage for UI components and API logic.
+
+Type validations: Introduce stricter schemas with zod or io-ts.
+
+Error boundaries: Better resilience against API or render failures.
+
+These enhancements aim to refine both usability and technical robustness for real-world use cases.
+
+## ✨ Final Thoughts
+
+This project was a joy to build — combining data, interactivity, and clean UX. Particular focus went into microinteractions and real-world usability.
+
+Looking forward to your feedback!

@@ -28,22 +28,35 @@ export const Pagination = ({
   const visiblePages = getVisiblePages();
 
   return (
-    <div className="pagination-container">
+    <nav
+      className="pagination-container"
+      role="navigation"
+      aria-label="Pagination"
+    >
       <button
+        type="button"
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
         className={cn("pagination-navigation", styles.navigation)}
+        aria-label="Previous page"
       >
         <ChevronLeft className="size-4" />
         <span className="hidden md:inline">Previous</span>
       </button>
 
-      {currentPage > 2 && <span className="px-2">...</span>}
+      {currentPage > 2 && (
+        <span className="px-2 text-sm text-zinc-500" aria-hidden="true">
+          …
+        </span>
+      )}
 
       {visiblePages.map((page) => (
         <button
           key={page}
+          type="button"
           onClick={() => onPageChange(page)}
+          aria-current={currentPage === page ? "page" : undefined}
+          aria-label={`Page ${page}`}
           className={cn(
             "pagination-button",
             styles.button,
@@ -55,17 +68,21 @@ export const Pagination = ({
       ))}
 
       {currentPage < totalPages - 1 && (
-        <span className={cn("pagination-dots", styles.dots)}>...</span>
+        <span className={cn("pagination-dots", styles.dots)} aria-hidden="true">
+          …
+        </span>
       )}
 
       <button
+        type="button"
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
         className={cn("pagination-navigation", styles.navigation)}
+        aria-label="Next page"
       >
         <span className="hidden md:inline">Next</span>
         <ChevronRight className="size-4" />
       </button>
-    </div>
+    </nav>
   );
 };

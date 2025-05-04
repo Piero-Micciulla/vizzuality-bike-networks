@@ -25,33 +25,43 @@ const buttonVariants = cva(
 );
 
 interface ButtonProps
-  extends React.ComponentProps<"button">,
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
   asChild?: boolean;
   isSelected?: boolean;
 }
 
-function Button({
-  className,
-  variant,
-  size,
-  asChild = false,
-  isSelected = false,
-  ...props
-}: ButtonProps) {
-  const Comp = asChild ? Slot : "button";
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  (
+    {
+      className,
+      variant,
+      size,
+      asChild = false,
+      isSelected = false,
+      type = "button",
+      ...props
+    },
+    ref
+  ) => {
+    const Comp = asChild ? Slot : "button";
 
-  return (
-    <Comp
-      data-slot="button"
-      className={cn(
-        buttonVariants({ variant, size }),
-        isSelected && "ring-1 ring-primary ring-offset-1",
-        className
-      )}
-      {...props}
-    />
-  );
-}
+    return (
+      <Comp
+        ref={ref}
+        data-slot="button"
+        className={cn(
+          buttonVariants({ variant, size }),
+          isSelected && "ring-1 ring-primary ring-offset-1",
+          className
+        )}
+        type={asChild ? undefined : type}
+        {...props}
+      />
+    );
+  }
+);
+
+Button.displayName = "Button";
 
 export { Button, buttonVariants };

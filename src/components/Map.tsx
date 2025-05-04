@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Map as ReactMap,
   Marker,
@@ -29,23 +29,33 @@ export const Map = ({
 }) => {
   const [selectedMarker, setSelectedMarker] = useState<MarkerData | null>(null);
 
+  const validMarkers = useMemo(
+    () =>
+      markers.filter(
+        (m) =>
+          typeof m.latitude === "number" &&
+          !isNaN(m.latitude) &&
+          typeof m.longitude === "number" &&
+          !isNaN(m.longitude)
+      ),
+    [markers]
+  );
+
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (!useUserLocation) return;
-    if (!("geolocation" in navigator)) {
-      console.log("Geolocation not available.");
+    if (
+      typeof window === "undefined" ||
+      !useUserLocation ||
+      !("geolocation" in navigator)
+    )
       return;
-    }
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        if (mapRef?.current) {
-          mapRef.current.easeTo({
-            center: [position.coords.longitude, position.coords.latitude],
-            zoom: 12,
-            duration: 1000,
-          });
-        }
+        mapRef?.current?.easeTo({
+          center: [position.coords.longitude, position.coords.latitude],
+          zoom: 12,
+          duration: 1000,
+        });
       },
       (error) => {
         console.warn("Geolocation error:", error.message);
@@ -55,20 +65,9 @@ export const Map = ({
   }, [useUserLocation, mapRef]);
 
   useEffect(() => {
-    if (!mapRef?.current || markers.length === 0) return;
+    if (!mapRef?.current || validMarkers.length === 0) return;
 
     const bounds = new mapboxgl.LngLatBounds();
-
-    const validMarkers = markers.filter(
-      (marker) =>
-        typeof marker.latitude === "number" &&
-        !isNaN(marker.latitude) &&
-        typeof marker.longitude === "number" &&
-        !isNaN(marker.longitude)
-    );
-
-    if (validMarkers.length === 0) return;
-
     validMarkers.forEach((marker) => {
       bounds.extend([marker.longitude, marker.latitude]);
     });
@@ -77,7 +76,7 @@ export const Map = ({
       padding: 60,
       duration: 1000,
     });
-  }, [markers, mapRef]);
+  }, [validMarkers, mapRef]);
 
   useEffect(() => {
     if (nearMeMarker && mapRef?.current) {
@@ -88,6 +87,72 @@ export const Map = ({
       });
     }
   }, [nearMeMarker, mapRef]);
+
+  const renderPopup = () => {
+    if (!showPopups || !selectedMarker) return null;
+
+    const totalCapacity =
+      (selectedMarker.freeBikes || 0) + (selectedMarker.emptySlots || 0);
+
+    const bikePercent = Math.min(
+      ((selectedMarker.freeBikes || 0) / (totalCapacity || 1)) * 100,
+      100
+    );
+
+    const slotPercent = Math.min(
+      ((selectedMarker.emptySlots || 0) / (totalCapacity || 1)) * 100,
+      100
+    );
+
+    return (
+      <Popup
+        latitude={selectedMarker.latitude}
+        longitude={selectedMarker.longitude}
+        onClose={() => setSelectedMarker(null)}
+        closeOnClick={false}
+        anchor="bottom"
+      >
+        <div
+          className="relative bg-white rounded-md shadow-lg px-4 py-3 text-sm text-black w-[260px] -translate-x-5 translate-y-4"
+          role="tooltip"
+        >
+          <h3 className="font-semibold text-torea-800 mb-2">
+            {formatStationLabel(selectedMarker.label || "")}
+          </h3>
+
+          <div className="mb-2">
+            <div className="flex justify-between mb-1">
+              <span>Bikes</span>
+              <span className="font-bold">{selectedMarker.freeBikes ?? 0}</span>
+            </div>
+            <div className="h-2 rounded bg-gray-200">
+              <div
+                className="h-2 rounded bg-lime-500"
+                style={{ width: `${bikePercent}%` }}
+              />
+            </div>
+          </div>
+
+          <div>
+            <div className="flex justify-between mb-1">
+              <span>Slots</span>
+              <span className="font-bold">
+                {selectedMarker.emptySlots ?? 0}
+              </span>
+            </div>
+            <div className="h-2 rounded bg-gray-200">
+              <div
+                className="h-2 rounded bg-grenadier-800"
+                style={{ width: `${slotPercent}%` }}
+              />
+            </div>
+          </div>
+
+          <div className="absolute bottom-[-6px] left-1/2 transform -translate-x-1/2 w-4 h-4 bg-white rotate-45 shadow-lg" />
+        </div>
+      </Popup>
+    );
+  };
 
   return (
     <div className="w-full h-full">
@@ -101,13 +166,9 @@ export const Map = ({
         initialViewState={initialViewState}
         mapStyle="mapbox://styles/mapbox/light-v10"
       >
-        <NavigationControl
-          showZoom={true}
-          showCompass={false}
-          position="top-right"
-        />
+        <NavigationControl showZoom showCompass={false} position="top-right" />
 
-        {markers.map((marker) => (
+        {validMarkers.map((marker) => (
           <Marker
             key={marker.id}
             latitude={marker.latitude}
@@ -133,79 +194,7 @@ export const Map = ({
           </Marker>
         )}
 
-        {showPopups &&
-          selectedMarker &&
-          (() => {
-            const totalCapacity =
-              (selectedMarker.freeBikes || 0) +
-              (selectedMarker.emptySlots || 0);
-
-            return (
-              <Popup
-                latitude={selectedMarker.latitude}
-                longitude={selectedMarker.longitude}
-                onClose={() => setSelectedMarker(null)}
-                closeOnClick={false}
-                anchor="bottom"
-              >
-                <div className="relative bg-white rounded-md shadow-lg px-4 py-3 text-sm text-black w-[260px] -translate-x-5 translate-y-4">
-                  <h3 className="font-semibold text-torea-800 mb-2">
-                    {formatStationLabel(selectedMarker.label || "")}
-                  </h3>
-
-                  {selectedMarker.freeBikes !== undefined && (
-                    <div className="mb-2">
-                      <div className="flex justify-between mb-1">
-                        <span>Bikes</span>
-                        <span className="font-bold">
-                          {selectedMarker.freeBikes}
-                        </span>
-                      </div>
-                      <div className="h-2 rounded bg-gray-200">
-                        <div
-                          className="h-2 rounded bg-lime-500"
-                          style={{
-                            width: `${Math.min(
-                              ((selectedMarker.freeBikes || 0) /
-                                (totalCapacity || 1)) *
-                                100,
-                              100
-                            )}%`,
-                          }}
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  {selectedMarker.emptySlots !== undefined && (
-                    <div>
-                      <div className="flex justify-between mb-1">
-                        <span>Slots</span>
-                        <span className="font-bold">
-                          {selectedMarker.emptySlots}
-                        </span>
-                      </div>
-                      <div className="h-2 rounded bg-gray-200">
-                        <div
-                          className="h-2 rounded bg-grenadier-800"
-                          style={{
-                            width: `${Math.min(
-                              ((selectedMarker.emptySlots || 0) /
-                                (totalCapacity || 1)) *
-                                100,
-                              100
-                            )}%`,
-                          }}
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="absolute bottom-[-6px] left-1/2 transform -translate-x-1/2 w-4 h-4 bg-white rotate-45 shadow-lg" />
-                </div>
-              </Popup>
-            );
-          })()}
+        {renderPopup()}
       </ReactMap>
     </div>
   );

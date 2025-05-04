@@ -26,17 +26,15 @@ type PopoverContentProps = React.ComponentProps<
 > &
   VariantProps<typeof popoverVariants>;
 
-const Popover = ({
-  ...props
-}: React.ComponentProps<typeof PopoverPrimitive.Root>) => {
-  return <PopoverPrimitive.Root data-slot="popover" {...props} />;
-};
+const Popover = (props: React.ComponentProps<typeof PopoverPrimitive.Root>) => (
+  <PopoverPrimitive.Root data-slot="popover" {...props} />
+);
+Popover.displayName = "Popover";
 
-const PopoverTrigger = ({
-  ...props
-}: React.ComponentProps<typeof PopoverPrimitive.Trigger>) => {
-  return <PopoverPrimitive.Trigger data-slot="popover-trigger" {...props} />;
-};
+const PopoverTrigger = (
+  props: React.ComponentProps<typeof PopoverPrimitive.Trigger>
+) => <PopoverPrimitive.Trigger data-slot="popover-trigger" {...props} />;
+PopoverTrigger.displayName = "PopoverTrigger";
 
 const PopoverContent = ({
   className,
@@ -44,24 +42,22 @@ const PopoverContent = ({
   sideOffset = 4,
   variant,
   ...props
-}: PopoverContentProps) => {
-  return (
-    <PopoverPrimitive.Portal>
-      <PopoverPrimitive.Content
-        data-slot="popover-content"
-        align={align}
-        sideOffset={sideOffset}
-        className={cn(popoverVariants({ variant }), className)}
-        {...props}
-      />
-    </PopoverPrimitive.Portal>
-  );
-};
+}: PopoverContentProps) => (
+  <PopoverPrimitive.Portal>
+    <PopoverPrimitive.Content
+      data-slot="popover-content"
+      align={align}
+      sideOffset={sideOffset}
+      className={cn(popoverVariants({ variant }), className)}
+      {...props}
+    />
+  </PopoverPrimitive.Portal>
+);
+PopoverContent.displayName = "PopoverContent";
 
-const PopoverAnchor = ({
-  ...props
-}: React.ComponentProps<typeof PopoverPrimitive.Anchor>) => {
-  return <PopoverPrimitive.Anchor data-slot="popover-anchor" {...props} />;
-};
+const PopoverAnchor = (
+  props: React.ComponentProps<typeof PopoverPrimitive.Anchor>
+) => <PopoverPrimitive.Anchor data-slot="popover-anchor" {...props} />;
+PopoverAnchor.displayName = "PopoverAnchor";
 
 export { Popover, PopoverTrigger, PopoverContent, PopoverAnchor };

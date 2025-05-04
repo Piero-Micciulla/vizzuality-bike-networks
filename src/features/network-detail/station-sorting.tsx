@@ -2,7 +2,7 @@
 
 import { StationSortingProps } from "@/types/station";
 import { cn } from "@/lib/utils";
-import { ArrowDownUp, ArrowUpDown } from "lucide-react";
+import { ArrowUpDown, ArrowDownUp } from "lucide-react";
 
 export const StationSorting = ({
   sortField,
@@ -11,8 +11,10 @@ export const StationSorting = ({
   className = "",
 }: StationSortingProps) => {
   const getLabel = (field: "free_bikes" | "empty_slots") => {
-    if (sortField !== field)
+    if (sortField !== field) {
       return <ArrowUpDown className="inline size-4 ml-1" />;
+    }
+
     return sortDirection === "asc" ? (
       <ArrowUpDown className="inline size-4 ml-1" />
     ) : (
@@ -31,12 +33,14 @@ export const StationSorting = ({
       <button
         onClick={() => onSortChange("free_bikes")}
         className="w-1/4 text-left uppercase cursor-pointer flex flex-col lg:flex-row items-start lg:items-center gap-1"
+        aria-pressed={sortField === "free_bikes"}
       >
         Free Bikes {getLabel("free_bikes")}
       </button>
       <button
         onClick={() => onSortChange("empty_slots")}
         className="w-1/4 text-left uppercase cursor-pointer flex flex-col lg:flex-row items-start lg:items-center gap-1"
+        aria-pressed={sortField === "empty_slots"}
       >
         Empty Slots {getLabel("empty_slots")}
       </button>

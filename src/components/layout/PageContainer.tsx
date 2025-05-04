@@ -1,12 +1,24 @@
 import { cn } from "@/lib/utils";
-import type { PageContainerProps } from "@/types/layout";
+import type { ReactNode, ElementType } from "react";
 
-const PageContainer = ({ children, className }: PageContainerProps) => {
+export type PageContainerProps = {
+  children: ReactNode;
+  className?: string;
+  as?: ElementType;
+};
+
+const PageContainer = ({
+  children,
+  className,
+  as: Component = "div",
+}: PageContainerProps) => {
   return (
-    <div className={cn("w-full px-4 sm:px-6 lg:px-0", className)}>
+    <Component className={cn("w-full px-4 sm:px-6 lg:px-0", className)}>
       {children}
-    </div>
+    </Component>
   );
 };
+
+PageContainer.displayName = "PageContainer";
 
 export default PageContainer;

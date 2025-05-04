@@ -1,20 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, MapPin, Briefcase, LocateFixed } from "lucide-react";
+import { ArrowLeft, MapPin, Briefcase } from "lucide-react";
 
 import { getNetworkById } from "@/lib/api";
 import { Map } from "@/components/Map";
 import { Pagination } from "@/components/Pagination";
 import { StationSorting } from "@/features/network-detail/station-sorting";
 import StationList from "@/features/network-detail/station-list";
+import Loader from "@/components/ui/loader";
+import PageTransition from "@/components/ui/page-transition";
 
 import { NetworkDetail } from "@/types/network";
 import { MarkerData } from "@/types/map";
 import { SortKey, SortOrder } from "@/types/station";
-import Loader from "@/components/ui/loader";
 
 const itemsPerPage = 7;
 
@@ -29,8 +30,9 @@ export const NetworkDetailPageContent = () => {
   useEffect(() => {
     async function fetchNetwork() {
       if (!id || Array.isArray(id)) return;
+
+      setLoading(true);
       try {
-        setLoading(true);
         const fetchedNetwork = await getNetworkById(id);
         setNetwork(fetchedNetwork);
       } catch (error) {
@@ -43,35 +45,36 @@ export const NetworkDetailPageContent = () => {
     fetchNetwork();
   }, [id]);
 
-  if (loading || !network) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <Loader className="border-torea-800 border-t-white" />
-        <p className="ml-3 text-white text-sm">Loading network details...</p>
-      </div>
+  const sortedStations = useMemo(() => {
+    if (!network) return [];
+    return [...network.stations].sort((a, b) => {
+      const aVal = a[sortKey] ?? 0;
+      const bVal = b[sortKey] ?? 0;
+      return sortOrder === "asc" ? aVal - bVal : bVal - aVal;
+    });
+  }, [network, sortKey, sortOrder]);
+
+  const paginatedStations = useMemo(() => {
+    return sortedStations.slice(
+      (currentPage - 1) * itemsPerPage,
+      currentPage * itemsPerPage
     );
-  }
+  }, [sortedStations, currentPage]);
 
-  const markers: MarkerData[] = network.stations.map((station) => ({
-    id: station.id,
-    latitude: station.latitude,
-    longitude: station.longitude,
-    label: station.name,
-    freeBikes: station.free_bikes,
-    emptySlots: station.empty_slots,
-  }));
-
-  const sortedStations = [...network.stations].sort((a, b) => {
-    const valueA = a[sortKey] ?? 0;
-    const valueB = b[sortKey] ?? 0;
-    return sortOrder === "asc" ? valueA - valueB : valueB - valueA;
-  });
+  const markers: MarkerData[] = useMemo(() => {
+    return (
+      network?.stations.map((station) => ({
+        id: station.id,
+        latitude: station.latitude,
+        longitude: station.longitude,
+        label: station.name,
+        freeBikes: station.free_bikes,
+        emptySlots: station.empty_slots,
+      })) ?? []
+    );
+  }, [network]);
 
   const totalPages = Math.ceil(sortedStations.length / itemsPerPage);
-  const paginatedStations = sortedStations.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
 
   const handleSortChange = (key: SortKey) => {
     if (sortKey === key) {
@@ -83,74 +86,86 @@ export const NetworkDetailPageContent = () => {
     setCurrentPage(1);
   };
 
+  if (loading || !network) {
+    return (
+      <div className="flex items-center justify-center h-screen gap-2">
+        <Loader className="border-torea-800 border-t-white" />
+        <p className="text-white text-sm">Loading network details...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="page-outer-container--network-details">
       <div className="page-content-container">
-        <div className="page-inner-content-container--network-details">
-          <div
-            className="network-details-top-container"
-            style={{ backgroundImage: "url('/bg-network-details.jpg')" }}
-          >
-            <Link href="/">
-              <div className="w-10 h-10 bg-white text-grenadier-400 flex items-center justify-center rounded-full">
-                <ArrowLeft className="size-4" />
-              </div>
-            </Link>
+        <PageTransition>
+          <div className="page-inner-content-container--network-details">
+            <div
+              className="network-details-top-container"
+              style={{ backgroundImage: "url('/bg-network-details.jpg')" }}
+            >
+              <Link href="/" aria-label="Back to homepage">
+                <div className="w-10 h-10 bg-white text-grenadier-400 flex items-center justify-center rounded-full">
+                  <ArrowLeft className="size-4" />
+                </div>
+              </Link>
 
-            <h1 className="subheading mt-2">{network.name}</h1>
+              <h1 className="subheading mt-2">{network.name}</h1>
 
-            <p className="network-details-data mb-2">
-              <MapPin className="size-4" />
-              <span>
-                {network.location.city}, {network.location.country}
-              </span>
-            </p>
-
-            {network.company.length > 0 && (
-              <p className="network-details-data mt-2">
-                <Briefcase className="size-4" />
-                <span>{network.company.join(", ")}</span>
+              <p className="network-details-data mb-2">
+                <MapPin className="size-4" />
+                <span>
+                  {network.location.city}, {network.location.country}
+                </span>
               </p>
-            )}
-            <div className="pointer-events-none absolute bottom-0 left-0 w-full h-12 bg-gradient-to-t from-torea-800 to-transparent" />
-          </div>
 
-          <div className="network-details-bottom-container">
-            {network.stations.length > 0 ? (
-              <>
-                <p className="mt-6">
-                  All{" "}
-                  <span className="network-details-count-container">
-                    {network.stations.length}
-                  </span>{" "}
-                  stations
+              {network.company.length > 0 && (
+                <p className="network-details-data mt-2">
+                  <Briefcase className="size-4" />
+                  <span>{network.company.join(", ")}</span>
                 </p>
+              )}
 
-                <StationSorting
-                  sortField={sortKey}
-                  sortDirection={sortOrder}
-                  onSortChange={handleSortChange}
-                  className="mt-4"
-                />
+              <div className="pointer-events-none absolute bottom-0 left-0 w-full h-12 bg-gradient-to-t from-torea-800 to-transparent" />
+            </div>
 
-                <StationList stations={paginatedStations} />
+            <div className="network-details-bottom-container">
+              {network.stations.length > 0 ? (
+                <>
+                  <p className="mt-6">
+                    All{" "}
+                    <span className="network-details-count-container">
+                      {network.stations.length}
+                    </span>{" "}
+                    stations
+                  </p>
 
-                {totalPages > 1 && (
-                  <Pagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={setCurrentPage}
-                    variant="secondary"
+                  <StationSorting
+                    sortField={sortKey}
+                    sortDirection={sortOrder}
+                    onSortChange={handleSortChange}
+                    className="mt-4"
                   />
-                )}
-              </>
-            ) : (
-              <p className="text-sm text-gray-600 mb-4">
-                No stations available.
-              </p>
-            )}
+
+                  <StationList stations={paginatedStations} />
+
+                  {totalPages > 1 && (
+                    <Pagination
+                      currentPage={currentPage}
+                      totalPages={totalPages}
+                      onPageChange={setCurrentPage}
+                      variant="secondary"
+                    />
+                  )}
+                </>
+              ) : (
+                <p className="text-sm text-gray-600 mb-4">
+                  No stations available.
+                </p>
+              )}
+            </div>
           </div>
-        </div>
+        </PageTransition>
       </div>
 
       <div className="relative w-full h-[40vh] lg:basis-2/3 lg:h-[100vh]">

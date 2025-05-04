@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useIsLargeScreen } from "@/hooks/useIsLargeScreen";
-import { Search } from "lucide-react";
+import { Search, MapPin } from "lucide-react";
 import {
   Popover,
   PopoverContent,
@@ -13,7 +13,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import countries from "@/data/countries.json";
-import { MapPin } from "lucide-react";
+
+type Country = {
+  code: string;
+  name: string;
+};
 
 export const CountryFilter = () => {
   const router = useRouter();
@@ -26,14 +30,11 @@ export const CountryFilter = () => {
   const [highlightedIndex, setHighlightedIndex] = useState(0);
   const [isSelected, setIsSelected] = useState(false);
 
-  const filteredCountries = useMemo(
-    () =>
-      countries.data
-        .filter((country) =>
-          country.name.toLowerCase().includes(searchTerm.toLowerCase())
-        ),
-    [searchTerm]
-  );
+  const filteredCountries = useMemo(() => {
+    return countries.data.filter((country: Country) =>
+      country.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [searchTerm]);
 
   useEffect(() => {
     if (open && selectedCountryCode) {
@@ -44,11 +45,10 @@ export const CountryFilter = () => {
     }
   }, [open, filteredCountries, selectedCountryCode]);
 
-  const handleCountrySelect = (value: string) => {
+  const handleCountrySelect = (code: string) => {
     const params = new URLSearchParams(searchParams);
-
-    if (value) {
-      params.set("country", value);
+    if (code) {
+      params.set("country", code);
     } else {
       params.delete("country");
     }
@@ -109,8 +109,13 @@ export const CountryFilter = () => {
           }}
           onKeyDown={handleKeyDown}
           className="pl-10 pr-4 py-4"
+          aria-label="Search country input"
+          role="combobox"
         />
-        <div className="pt-2 pb-4 px-4 max-h-[200px] overflow-auto border-t border-zinc-500">
+        <div
+          className="pt-2 pb-4 px-4 max-h-[200px] overflow-auto border-t border-zinc-500"
+          role="listbox"
+        >
           {filteredCountries.length > 0 ? (
             filteredCountries.map((country, idx) => {
               const isHighlighted = idx === highlightedIndex;
@@ -120,6 +125,7 @@ export const CountryFilter = () => {
                   onClick={() => handleCountrySelect(country.code)}
                   tabIndex={-1}
                   aria-selected={isHighlighted}
+                  role="option"
                   className={cn(
                     "w-full text-left px-2 py-2 cursor-pointer",
                     isHighlighted ? "bg-torea-200" : "hover:bg-torea-200"

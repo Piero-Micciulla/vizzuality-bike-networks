@@ -23,16 +23,15 @@ const NetworkCard = ({ network }: Props) => {
               <div className="network-icon-container">
                 <MapPin className="size-4" />
               </div>
-
               <p>
                 {network.location.city}, {network.location.country}
               </p>
             </div>
+
             <div className="network-data">
               <div className="network-icon-container">
                 <Briefcase className="size-4" />
               </div>
-
               <p className="network-companies-display">
                 {displayed.join(", ")}
               </p>
@@ -45,7 +44,10 @@ const NetworkCard = ({ network }: Props) => {
           </div>
 
           <div className="network-inner-bottom">
-            <button className="network-details-button">
+            <button
+              className="network-details-button"
+              aria-label={`View details for ${network.name}`}
+            >
               <span className="network-details-text">Details</span>
               <ArrowRight className="size-4 min-w-4" />
             </button>

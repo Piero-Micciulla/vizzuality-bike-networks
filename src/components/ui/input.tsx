@@ -33,6 +33,8 @@ type InputProps = Omit<
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
   ({ className, variant, size, icon, type = "text", ...props }, ref) => {
+    const iconOffset = variant === "tertiary" ? "pl-10" : "pl-14";
+
     return (
       <div className="relative w-full">
         {icon && (
@@ -51,9 +53,10 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           ref={ref}
           className={cn(
             inputVariants({ variant, size }),
-            icon && "pl-14",
+            icon && iconOffset,
             className
           )}
+          role="textbox"
           {...props}
         />
       </div>

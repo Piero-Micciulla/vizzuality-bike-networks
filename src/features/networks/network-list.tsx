@@ -13,7 +13,10 @@ const NetworkList = ({ networks }: Props) => {
   }
 
   return (
-    <ul className="flex flex-col max-h-[30vh] overflow-y-auto sm:max-h-none sm:overflow-visible">
+    <ul
+      className="flex flex-col max-h-[30vh] overflow-y-auto sm:max-h-none sm:overflow-visible"
+      aria-label="List of available bike networks"
+    >
       {networks.map((network) => (
         <NetworkCard key={network.id} network={network} />
       ))}

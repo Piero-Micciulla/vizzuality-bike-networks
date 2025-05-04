@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 import { Map } from "@/components/Map";
 import { SearchInput } from "@/features/networks/search-input";
@@ -9,6 +9,7 @@ import { CountryFilter } from "@/features/networks/country-filter";
 import NetworkList from "@/features/networks/network-list";
 import { Pagination } from "@/components/Pagination";
 import Loader from "@/components/ui/loader";
+import PageTransition from "@/components/ui/page-transition";
 import { getNetworks } from "@/lib/api";
 
 import { Network } from "@/types/network";
@@ -18,7 +19,6 @@ import { Bike, LocateFixed } from "lucide-react";
 
 export const HomePageContent = () => {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const [networks, setNetworks] = useState<Network[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
@@ -42,19 +42,38 @@ export const HomePageContent = () => {
         setLoading(false);
       }
     }
+
     fetchNetworks();
   }, []);
 
-  const filteredNetworks = networks.filter((network) => {
-    const matchesSearch =
-      !search ||
-      network.name.toLowerCase().includes(search) ||
-      network.company?.join(", ").toLowerCase().includes(search);
+  const filteredNetworks = useMemo(() => {
+    return networks.filter((network) => {
+      const matchesSearch =
+        !search ||
+        network.name.toLowerCase().includes(search) ||
+        network.company?.join(", ").toLowerCase().includes(search);
 
-    const matchesCountry = !country || network.location.country === country;
+      const matchesCountry = !country || network.location.country === country;
 
-    return matchesSearch && matchesCountry;
-  });
+      return matchesSearch && matchesCountry;
+    });
+  }, [networks, search, country]);
+
+  const paginatedNetworks = useMemo(() => {
+    return filteredNetworks.slice(
+      (currentPage - 1) * itemsPerPage,
+      currentPage * itemsPerPage
+    );
+  }, [filteredNetworks, currentPage]);
+
+  const markers: MarkerData[] = useMemo(() => {
+    return filteredNetworks.map((network) => ({
+      id: network.id,
+      latitude: network.location.latitude,
+      longitude: network.location.longitude,
+      label: network.name,
+    }));
+  }, [filteredNetworks]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -62,17 +81,6 @@ export const HomePageContent = () => {
   }, [search, country]);
 
   const totalPages = Math.ceil(filteredNetworks.length / itemsPerPage);
-  const paginatedNetworks = filteredNetworks.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
-
-  const markers: MarkerData[] = filteredNetworks.map((network) => ({
-    id: network.id,
-    latitude: network.location.latitude,
-    longitude: network.location.longitude,
-    label: network.name,
-  }));
 
   const handleNearMeClick = () => {
     if (!navigator.geolocation) {
@@ -134,48 +142,54 @@ export const HomePageContent = () => {
   return (
     <div className="page-outer-container">
       <div className="page-content-container">
-        <div className="page-inner-content-container">
-          <h1 className="heading flex items-center gap-2">
-            <Bike className="size-6" />
-            CycleMap
-          </h1>
+        <PageTransition>
+          <div className="page-inner-content-container">
+            <h1 className="heading flex items-center gap-2">
+              <Bike className="size-6" />
+              CycleMap
+            </h1>
 
-          <h2 className="subheading text-torea-800 mt-4">
-            Discover Bikes Network
-          </h2>
+            <h2 className="subheading text-torea-800 mt-4">
+              Discover Bikes Network
+            </h2>
 
-          <p className="paragraph mt-2">
-            Lorem ipsum dolor sit amet consectetur. A volutpat adipiscing
-            placerat turpis magna sem tempor amet faucibus. Arcu praesent
-            viverra pellentesque nisi quam in rhoncus.
-          </p>
+            <p className="paragraph mt-2">
+              Lorem ipsum dolor sit amet consectetur. A volutpat adipiscing
+              placerat turpis magna sem tempor amet faucibus. Arcu praesent
+              viverra pellentesque nisi quam in rhoncus.
+            </p>
 
-          <div className="flex flex-col">
-            <div className="flex flex-col sm:flex-row gap-4 mt-4">
-              <SearchInput />
-              <CountryFilter />
-            </div>
+            <div className="flex flex-col">
+              <div className="flex flex-col sm:flex-row gap-4 mt-4">
+                <SearchInput />
+                <CountryFilter />
+              </div>
 
-            <div className="flex flex-col gap-2 mt-4">
-              <NetworkList
-                networks={nearMeNetwork ? [nearMeNetwork] : paginatedNetworks}
-              />
-
-              {!nearMeNetwork && totalPages > 1 && (
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={setCurrentPage}
+              <div className="flex flex-col gap-2 mt-4">
+                <NetworkList
+                  networks={nearMeNetwork ? [nearMeNetwork] : paginatedNetworks}
                 />
-              )}
+
+                {!nearMeNetwork && totalPages > 1 && (
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setCurrentPage}
+                  />
+                )}
+              </div>
             </div>
           </div>
-        </div>
-        <div className="pointer-events-none absolute bottom-0 left-0 w-full h-12 bg-gradient-to-t from-white to-transparent" />
+          <div className="pointer-events-none absolute bottom-0 left-0 w-full h-12 bg-gradient-to-t from-white to-transparent" />
+        </PageTransition>
       </div>
 
       <div className="relative w-full h-[40vh] lg:basis-2/3 lg:h-[100vh]">
-        <button onClick={handleNearMeClick} className="near-me-button">
+        <button
+          onClick={handleNearMeClick}
+          className="near-me-button"
+          aria-label="Find nearest network"
+        >
           <LocateFixed className="size-4" />
           Near Me
         </button>
